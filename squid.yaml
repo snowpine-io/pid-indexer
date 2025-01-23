@@ -1,0 +1,22 @@
+manifestVersion: subsquid.io/v0.1
+name: polkaidentity
+version: 1
+description: 'A squid that indexes DOT & KSM identities'
+build:
+deploy:
+  addons:
+    postgres:
+  processor:
+    - name: polkadot-processor
+      cmd: [ "sqd", "process:prod:polkadot" ]
+      env:
+        NETWORK: polkadot
+        POLKADOT_RPC_ENDPOINT: ${{ secrets.POLKADOT_RPC_ENDPOINT }}
+        POLKADOT_ARCHIVE_ENDPOINT: ${{ secrets.POLKADOT_ARCHIVE_ENDPOINT }}
+    - name: kusama-processor
+      cmd: [ "sqd", "process:prod:kusama" ]
+      env:
+        NETWORK: kusama
+        KUSAMA_RPC_ENDPOINT: ${{ secrets.KUSAMA_RPC_ENDPOINT }}
+  api:
+    cmd: [ "sqd", "serve:prod" ]

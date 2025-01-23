@@ -1,0 +1,177 @@
+#type Balance {
+#  transferable: BigInt!
+#  free: BigInt!
+#  reserved: BigInt!
+#  frozen: BigInt!
+#}
+
+enum Network {
+  Polkadot
+  Kusama
+}
+
+type Account @entity {
+  id: ID!
+  network: Network!
+
+  # Storage defaults
+  address: String! @index
+  nonce: Int!
+#  balance: Balance!
+
+  # Relations
+#  extrinsics: [Extrinsic] @derivedFrom(field: "signer")
+  identity: Identity @derivedFrom(field: "account")
+
+  # Extras
+  lastUpdateBlock: Int
+}
+
+type SubIdentity @entity {
+  id: ID!
+
+  name: Data
+  account: Account!
+
+  # Relations
+  identity: Identity!
+
+  # Extras
+  createdAt: DateTime!
+}
+
+union Data = BlakeTwo256 | Keccak256 | Raw | Sha256 | ShaThree256
+
+type BlakeTwo256 {
+  value: String
+}
+
+type Keccak256 {
+  value: String
+}
+
+type Raw {
+  value: String
+}
+
+type Sha256 {
+  value: String
+}
+
+type ShaThree256 {
+  value: String
+}
+
+type Identity @entity {
+  id: ID!
+  network: Network!
+  account: Account! @unique
+
+  # Identity info
+  display: Data
+  legal: Data
+  web: Data
+  matrix: Data
+  email: Data
+  twitter: Data
+  image: Data
+  pgpFingerprint: String
+  github: Data
+  discord: Data
+
+  # Relations
+  subidentities : [SubIdentity] @derivedFrom(field: "identity")
+  judgements: [Judgement] @derivedFrom(field: "identity")
+
+  # Extras
+  createdAt: DateTime!
+}
+
+enum JudgementType {
+  Unknown
+  FeePaid
+  Reasonable
+  KnownGood
+  OutOfDate
+  LowQuality
+  Erroneous
+}
+
+type Judgement @entity {
+  id: ID!
+
+  identity: Identity!
+  registrar: Registrar!
+  judgement: JudgementType!
+
+  # Extras
+  createdAt: DateTime
+}
+
+type Registrar @entity {
+  id: ID!
+
+  index: Int!
+  account: Account!
+  identity: Identity
+
+  fee: BigInt!
+  fields: BigInt!
+
+  # Relations
+  judgements: [Judgement] @derivedFrom(field: "registrar")
+
+  # Extras
+  createdAt: DateTime!
+}
+
+#type Fee {
+#  amount: BigInt
+#  who: Account
+#}
+#
+#type Extrinsic @entity {
+#  id: ID!
+#  hash: String! @index
+#  blockNumber: Int! @index
+#  blockHash: String!
+#  success: Boolean!
+#  pallet: String!
+#  method: String!
+#  args: JSON
+#  signature: JSON!
+#  signer: Account! @index
+#  nonce: Int!
+#  tip: BigInt
+#  fee: Fee
+#  error: String
+#  createdAt: DateTime!
+#
+#  # Relationship
+#  events: [Event] @derivedFrom(field: "extrinsic")
+#
+#  # Extras
+#  participants: [String!]!
+#}
+#
+#type Event @entity {
+#  id: ID!
+#  extrinsic: Extrinsic
+#  data: EventData
+#  name: String! @index
+#}
+#
+#union EventData = BalancesTransfer | TeleportBalanceWithdrawn
+#
+#type BalancesTransfer {
+#  from: Account!
+#  to: Account!
+#  amount: BigInt!
+#}
+#
+#type TeleportBalanceWithdrawn {
+#  beneficiary: Account!
+#  amount: BigInt!
+#  account: Account!
+#  destination: String!
+#}
